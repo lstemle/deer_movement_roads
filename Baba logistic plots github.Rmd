@@ -1,0 +1,79 @@
+---
+title: "BaBA plots for regression"
+author: "Leyna Stemle"
+date: "2025-05-08"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)#changed from johns
+
+
+#load packages
+require(tidyr)
+require(dplyr)
+require(ggplot2)
+require(cowplot)
+require(lubridate)
+#require(VGAM)
+#require(mgcv)
+#require(nnet)
+#require(digest)
+#require(purrr)
+#require(broom)
+require(ggpubr)
+require(correlationfunnel)
+#require(basemaps)
+#require(osmdata)
+require(sf)
+require(sp)
+#require(raster)
+#require(tidyterra)
+require(ggeffects)
+library(glmmTMB)
+```
+
+## R Regression
+We performed a logistic mixed effects model, with the response variable as the bounce binary 0 and 1 as quick cross.
+
+
+```{r glmmtmb}
+setwd("F:/gbr_postdoc/BaBA_paper/final")
+#read in data
+df5<- read.csv("scaled, centered, transform logisiticfixed_roadnlcd.csv")
+
+#make the top model
+#land cover variables + time/seasom + road
+model255<- glmmTMB(type ~ std_lnforest  +std_lndev+std_lnagri+ std_forest +std_agri+std_dev+(1 |site) + (1|AnimalID)+season+time.cat
+                 + std_rdden+ stdln_rdden
+                  +road_category ,
+                  # df5 now only bounce vs. quick cross                 
+                  data = df5, family = binomial(link = "logit"))
+summary(model255)#
+
+#check model
+diagnose(model255)
+
+```
+
+## Including Plots of predicted probabilities 
+
+
+
+```{r "variables x crossings-logistic", echo=FALSE}
+
+#plots from top model
+  pr3 <- ggpredict(model255, "road_category")
+  plot(pr3)
+  
+  pr4 <- ggpredict(model255, "season")
+  plot(pr4)
+  
+  pr5 <- ggpredict(model255, "time.cat")
+  plot(pr5)
+  
+```
+
+
